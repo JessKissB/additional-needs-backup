@@ -17,6 +17,17 @@ function getFormattedDate() {
   return `${day} ${month} ${year}`;
 }
 
+// Converts "27/03/2026" to "27 Mar 2026"
+function formatScreenerDate(dateStr) {
+  if (!dateStr || !dateStr.includes('/')) return dateStr;
+  const parts = dateStr.split('/');
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const day = parts[0];
+  const month = monthNames[parseInt(parts[1]) - 1];
+  const year = parts[2];
+  return `${day} ${month} ${year}`;
+}
+
 function getNowISO() {
   return new Date().toISOString();
 }
@@ -44,22 +55,28 @@ module.exports = function (router) {
 
   router.get("/" + v + "/san/:ref/profile/challenges", function (req, res) {
     const ref = matchref(req);
+    
+    // Capture flags
     const challengeUpdated = req.session.data.challengeUpdated;
     const challengeArchived = req.session.data.challengeArchived;
-    const challengeAdded = req.session.data.challengeAdded;
     const screenerRecorded = req.session.data.screenerRecorded;
+    const challengeAndSupportAdded = req.session.data.challengeAndSupportAdded;
+    const challengeOnlyAdded = req.session.data.challengeOnlyAdded;
 
+    // Reset flags immediately
     req.session.data.challengeUpdated = false;
     req.session.data.challengeArchived = false;
-    req.session.data.challengeAdded = false;
     req.session.data.screenerRecorded = false;
+    req.session.data.challengeAndSupportAdded = false;
+    req.session.data.challengeOnlyAdded = false;
 
     res.render(v + "/san/challenges/overview", {
       ref,
       challengeUpdated,
       challengeArchived,
-      challengeAdded,
-      screenerRecorded
+      screenerRecorded,
+      challengeAndSupportAdded,
+      challengeOnlyAdded
     });
   });
 
@@ -97,6 +114,13 @@ module.exports = function (router) {
       identified = identified.filter(item => item !== '_unchecked').join(', ');
     }
 
+    // Smart banner logic
+    if (support && support.trim().length > 0) {
+        req.session.data.challengeAndSupportAdded = true;
+    } else {
+        req.session.data.challengeOnlyAdded = true;
+    }
+
     if (!Array.isArray(prisoner.needsChallenges)) prisoner.needsChallenges = [];
     
     prisoner.needsChallenges.push({
@@ -108,7 +132,6 @@ module.exports = function (router) {
       needsChallengeAuthor: "J. Smith"
     });
 
-    req.session.data.challengeAdded = true;
     res.redirect("/" + v + "/san/" + ref + "/profile/challenges");
   });
 
@@ -160,13 +183,13 @@ module.exports = function (router) {
     res.render(v + "/san/screener/check-answers", { ref });
   });
 
-  // STEP 8: FINAL SCREENER SUBMISSION LOGIC (Updated for Strengths)
   router.post("/" + v + "/san/:ref/screener/check-answers", function (req, res) {
     let ref = matchref(req);
     const prisoner = req.session.data[v + "prisoners"].find(p => p.prisonerNumber === ref);
-    const screenerDate = req.session.data['screener-date'] || getFormattedDate();
+    
+    const rawDate = req.session.data['screener-date'];
+    const screenerDate = formatScreenerDate(rawDate) || getFormattedDate();
 
-    // Challenge Mapping
     const challengeMap = [
       { key: 'screener-literacy', label: 'Literacy skills' },
       { key: 'screener-numeracy', label: 'Numeracy skills' },
@@ -178,7 +201,6 @@ module.exports = function (router) {
       { key: 'screener-sensory', label: 'Sensory' }
     ];
 
-    // Strength Mapping (Matches checkbox names in select-strengths.html)
     const strengthMap = [
       { key: 'screener-strength-literacy', label: 'Literacy skills' },
       { key: 'screener-strength-numeracy', label: 'Numeracy skills' },
@@ -201,7 +223,6 @@ module.exports = function (router) {
       'Sensory': 'Allow use of noise-canceling headphones. Ensure lighting is not flickering. Provide a quiet workspace.'
     };
 
-    // SAVE CHALLENGES
     challengeMap.forEach(cat => {
       let items = req.session.data[cat.key];
       if (items && Array.isArray(items)) {
@@ -220,7 +241,6 @@ module.exports = function (router) {
       }
     });
 
-    // SAVE STRENGTHS
     strengthMap.forEach(cat => {
       let items = req.session.data[cat.key];
       if (items && Array.isArray(items)) {
@@ -238,8 +258,6 @@ module.exports = function (router) {
     });
 
     req.session.data.screenerRecorded = true;
-    
-    // Clear temporary screener inputs
     [...challengeMap, ...strengthMap].forEach(cat => { delete req.session.data[cat.key]; });
     delete req.session.data['screener-date'];
 
