@@ -129,13 +129,13 @@
             </div>
           {% endfor %}
           
-          <p class="govuk-body"><a href="/{{ v }}/san/{{ ref }}/strengths/add/category" class="govuk-link">Add a strength</a></p>
+          <p class="govuk-body"><a href="#" class="govuk-link">Add a strength</a></p>
 
         {% else %}
           {# EMPTY STATE #}
           <p class="govuk-body">{{ prisoner.firstName }} {{ prisoner.lastName }} has no current strengths</p>
           <p class="govuk-body govuk-!-margin-top-6">
-            <a href="/{{ v }}/san/{{ ref }}/strengths/add/category" class="govuk-link govuk-!-font-weight-bold">Add a strength</a>
+            <a href="#" class="govuk-link govuk-!-font-weight-bold">Add a strength</a>
           </p>
         {% endif %}
       {% endset %}

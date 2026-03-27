@@ -36,12 +36,16 @@
           "Numeracy skills": "maths and managing money",
           "Physical skills and coordination": "learning new skills, co-ordination, stamina and fine motor skills",
           "Processing speed": "taking time to understand and follow instructions",
-          "Sensory": "reacting to some environments or situations eg noise or being touched",
-          "General need": "what they find difficult"
+          "Sensory": "reacting to some environments or situations eg noise or being touched"
         } %}
 
-        {# 3. Determine the specific examples based on selection #}
-        {% set exampleText = hintMap[selectedCat] or "what they find difficult" %}
+        {# 3. Logic to determine the final hint text and avoid repetition for General need #}
+        {% if selectedCat == "General need" %}
+          {% set finalHintText = "Details of what they find difficult" %}
+        {% else %}
+          {% set exampleText = hintMap[selectedCat] or "what they find difficult" %}
+          {% set finalHintText = "Details of what they find difficult, for example " + exampleText %}
+        {% endif %}
 
         <form action="/{{ v }}/san/{{ ref }}/challenges/add/support" method="post">
           
@@ -50,7 +54,7 @@
             Add {{ selectedCat | lower }} challenge for {{ prisoner.firstName }} {{ prisoner.lastName }}
           </h1>
 
-          {# 1. Describe the challenge - Changed to maxlength for character count #}
+          {# 1. Describe the challenge - Using the clean finalHintText variable #}
           {{ govukCharacterCount({
             name: "san-" + v + "-" + ref + "-challenge-description",
             id: "challenge-description",
@@ -61,11 +65,11 @@
               isPageHeading: false
             },
             hint: {
-              text: "Details of what they find difficult, for example " + exampleText
+              text: finalHintText
             }
           }) }}
 
-          {# 2. Describe the support (Optional) - Changed to maxlength for character count #}
+          {# 2. Describe the support (Optional) #}
           {{ govukCharacterCount({
             name: "san-" + v + "-" + ref + "-support-description",
             id: "support-description",

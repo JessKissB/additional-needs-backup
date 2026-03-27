@@ -90,7 +90,7 @@
         {% if countCurrent == 0 %}
           {# EMPTY STATE #}
           <div>
-            <p class="govuk-body">{{ prisoner.firstName }} {{ prisoner.lastName }} has no current challenges.</p>
+            <p class="govuk-body">{{ prisoner.firstName }} {{ prisoner.lastName }} has no current challenges</p>
             <p class="govuk-body govuk-!-margin-bottom-0">
               <a href="/{{ v }}/san/{{ prisoner.prisonerNumber }}/challenges/add/category" class="govuk-link govuk-link--no-visited-state govuk-!-font-weight-bold">
                 Add challenges and support
@@ -186,7 +186,7 @@
 
           <p class="govuk-body govuk-!-margin-top-6">
             <a href="/{{ v }}/san/{{ prisoner.prisonerNumber }}/challenges/add/category" class="govuk-link govuk-link--no-visited-state">
-              Add another challenge and support strategy
+              Add another challenge and support
             </a>
           </p>
 
@@ -195,7 +195,7 @@
 
       {# ===================== HISTORY TAB PANEL ===================== #}
       {% set historyHtml %}
-          <p class="govuk-body">{{ prisoner.firstName }} {{ prisoner.lastName }} has no previous challenges.</p>
+          <p class="govuk-body">{{ prisoner.firstName }} {{ prisoner.lastName }} has no previous challenges</p>
       {% endset %}
 
       {# RENDER TABS #}
